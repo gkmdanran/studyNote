@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function Parent(name) {
+            this.name = name;
+            this.type = ['JS', 'HTML', 'CSS'];
+        }
+        function Son(name) {
+            Parent.call(this,name);
+        }
+        son1 = new Son('react');
+        son1.type.push('VUE');
+        console.log(son1.type);//['JS','HTML','CSS','VUE']
+        console.log(son1.name); //react
+        son2 = new Son('jquery');
+        console.log(son2.type);//['JS','HTML','CSS']
+        console.log(son2.name); //jquery
+        // son2.show()
+        // 优点
+        // 1.实现实例化对象的独立性；
+        // 2.还可以给实例化对象添加参数
+
+        // 缺点
+        //1.方法都在构造函数中定义，每次实例化对象都得创建一遍方法，基本无法实现函数复用
+        //2.call方法仅仅调用了父级构造函数的属性及方法，没有办法调用父级构造函数原型对象的方法
+    </script>
+</body>
+
+</html>

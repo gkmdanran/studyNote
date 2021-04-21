@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+
+</head>
+
+<body>
+    <script>
+        function looseEqual(a, b) {
+            if (a === b) return true
+            var isObjectA = a !== null && typeof a === 'object'
+            var isObjectB = b !== null && typeof b === 'object'
+            if (isObjectA && isObjectB) {
+                try {
+                    var isArrayA = Array.isArray(a)
+                    var isArrayB = Array.isArray(b)
+                    if (isArrayA && isArrayB) {
+                        return a.length === b.length && a.every((item, i) => {
+                            return looseEqual(item, b[i])
+                        })
+                    } else if (a instanceof Date && b instanceof Date) {
+                        return a.getTime() === b.getTime()
+                    } else if (!isArrayA && !isArrayB) {
+                        var akeys = Object.keys(a)
+                        var bkeys = Object.keys(b)
+                        return akeys.length === bkeys.length && akeys.every((item, i) => {
+                            return looseEqual(a[item], b[item])
+                        })
+                    } else {
+                        return false
+                    }
+                } catch{
+                    return false
+                }
+            } else if (!isObjectA && !isObjectB) {
+                return String(a) === String(b)
+            } else {
+                return false
+            }
+        }
+
+        var a = {
+            name: 1
+        }
+        var b = {
+            name: 1
+        }
+        console.log(looseEqual(a, b))
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+    <script>
+        function Person(name){
+            this.name=name;
+            Person.prototype.sayName=()=>{
+                console.log(this.name)
+            }
+        }
+        let a = new Person('king');
+        a.sayName()
+        console.log(a)//Person {name: "king"}
+
+        function createNew(){
+            //创建新的空对象
+            let obj = {};
+            //解构获得构造函数和参数
+            let  [constructor,...params] = [...arguments];
+            //链接对象到函数原型
+            obj.__proto__  = constructor.prototype;
+            //执行构造函数，将构造函数中的this指向obj对象
+            let result = constructor.apply(obj,params);
+            //如果函数没有返回对象，就返回新创建的对象
+            return Object.prototype.toString.call(result) === '[object Object]' ? result : obj;      
+        }
+        let b = createNew(Person,'king');
+        b.sayName()
+        console.log(b)//Person {name: "king"}
+    </script>
+</html>

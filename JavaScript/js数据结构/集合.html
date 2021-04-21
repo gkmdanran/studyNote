@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+       function set(){
+           this.items={}
+           set.prototype.add=function(value){
+               if(this.has(value)){
+                   return false
+               }
+               this.items[value]=value
+               return true
+
+           }
+           set.prototype.has=function(value){
+               return this.items.hasOwnProperty(value)
+           }
+           set.prototype.remove=function(value){
+               if(!this.has(value))return false
+               delete this.items[value]
+           }
+           set.prototype.clear=function(){
+               this.items={}
+           }
+           set.prototype.size=function(){
+               return Object.keys(this.items).length
+           }
+           set.prototype.values=function(){
+               return Object.keys(this.items)
+           }
+           set.prototype.union=function(otherSet){
+               var unionSet=new set()
+               var values=this.values()
+               for(var i=0;i<values.length;i++){
+                   unionSet.add(values[i])
+               }
+                values=otherSet.values()
+               for(var i=0;i<values.length;i++){
+                   unionSet.add(values[i])
+               }
+               return unionSet
+           }
+           set.prototype.intersection=function(otherSet){
+                var intersection=new set()
+                var values=this.values()
+                for(var i=0;i<values.length;i++){
+                    var item=values[i]
+                    if(otherSet.has(item)){
+                        intersection.add(item)
+                    }
+                }
+                return intersection
+           }
+           set.prototype.difference=function(otherSet){
+                var difference=new set()
+                var values=this.values()
+                for(var i=0;i<values.length;i++){
+                    var item=values[i]
+                    if(!otherSet.has(item)){
+                        difference.add(item)
+                    }
+                }
+                return difference
+           }
+           set.prototype.subset=function(otherSet){
+            var values=this.values()
+                for(var i=0;i<values.length;i++){
+                    var item=values[i]
+                    if(!otherSet.has(item))return false
+                }
+                return true
+           }
+       }
+       var set1=new set()
+       set1.add(1)
+       set1.add(2)
+       set1.add(3)
+       
+       var set2=new set()
+       set2.add(2)
+       
+       console.log(set2.subset(set1))
+    </script>
+    
+</body>
+</html>

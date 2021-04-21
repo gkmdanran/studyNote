@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+</head>
+
+<body>
+    <button id="btn">2</button>
+</body>
+<script>
+    class myPro{
+        static PENDING="pending"
+        static REJECTED="rejected"
+        static FULFILLED="fulfilled"
+        constructor(exector){
+            this.value=null
+            this.status=myPro.PENDING
+            this.callbacks=[]
+            try {
+                exector(this.resolve.bind(this),this.reject.bind(this))
+            } catch (error) {
+                this.reject(error)
+            }
+        }
+        resolve(value){
+            if(this.status==myPro.PENDING){
+                this.value=value
+                this.status=myPro.FULFILLED
+                setTimeout(()=>{
+                    this.callbacks.map(item=>{
+                        item.onFulfilled(this.value)
+                    })
+                })
+            }
+        }
+        reject(value){
+            if(this.status==myPro.PENDING){
+                this.value=value
+                this.status=myPro.REJECTED
+                setTimeout(()=>{
+                    this.callbacks.map(item=>{
+                        item.onRejected(this.value)
+                    })
+                })
+            }
+        }
+        then(onFulfilled,onRejected){{
+            if(typeof onFulfilled!='function'){
+                return onFulfilled=()=>this.value
+            }
+            if(typeof onRejected!='function'){
+                return onRejected=()=>this.value
+            }
+            var p=new myPro((resolve,reject)=>{
+                if(this.status==myPro.FULFILLED){
+                    setTimeout(()=>{
+                        this.parse(p,onFulfilled(this.value),resolve,reject)
+                    })
+                }
+                if(this.status==myPro.REJECTED){
+                    setTimeout(()=>{
+                        this.parse(p,onRejected(this.value),resolve,reject)
+                    })
+                }
+                if(this.status==myPro.PENDING){
+                    this.callbacks.push({
+                        onFulfilled:(value)=>{
+                            this.parse(p,onFulfilled(value),resolve,reject)
+                        },
+                        onRejected:(value)=>{
+                            this.parse(p,onRejected(value),resolve,reject)
+                        },
+                    })
+                }
+                return p
+            })
+        }}
+        parse(pro,result,resolve,reject){
+            if(pro==result){
+                throw new TypeError('ERROR')
+            }
+            try {
+                if(result instanceof myPro){
+                    result.then(resolve,reject)
+                }else{
+                    resolve(result)
+                }
+            } catch (error) {
+                reject(error)
+            }
+            
+
+        }
+        static resolve(value){
+            return new myPro((resolve,reject)=>{
+                if(value instanceof myPro){
+                    value.then(resolve,reject)
+                }else{
+                    resolve(value)
+                }
+            })
+        }
+        static reject(value){
+            return new myPro((resolve,reject)=>{
+                reject(value)
+            })
+        }
+        static all(promises){
+            var values=[]
+            return new myPro((resolve,reject)=>{
+                promises.forEach(p => {
+                    p.then(value=>{
+                        values.push(value)
+                        if(values.length==promises.length){
+                            resolve(values)
+                        }
+                    },
+                    error=>{
+                        reject(error)
+                    })
+                });
+            })
+        }
+    }
+</script>
+
+</html>

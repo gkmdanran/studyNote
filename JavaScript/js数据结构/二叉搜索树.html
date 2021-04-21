@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    2
+    <script>
+        function BinarySearchTree(){
+            function Node(key){
+                this.key=key
+                this.left=null
+                this.right=null 
+            }
+            this.root=null
+            this.resultString=''
+            BinarySearchTree.prototype.insert=function(key){
+                var newNode=new Node(key) 
+                if(this.root==null){
+                    this.root=newNode
+                }else{
+                    this.insertNode(this.root,newNode)
+                }
+            }
+            BinarySearchTree.prototype.insertNode=function(node,newNode){
+                if(newNode.key<node.key){
+                    if(node.left==null){
+                        node.left=newNode
+                    }else{
+                        this.insertNode(node.left,newNode)
+                    }                                                          
+                }
+                else{
+                    if(node.right==null){
+                        node.right=newNode
+                    }else{
+                        this.insertNode(node.right,newNode)
+                    }        
+                }
+            }
+            BinarySearchTree.prototype.preOrderTraversal=function(){
+                this.resultString=''
+                this.preOrderTraversalNode(this.root)
+            }
+            BinarySearchTree.prototype.preOrderTraversalNode=function(node){
+                if(node!=null){
+                    this.resultString+=node.key+' '
+                    this.preOrderTraversalNode(node.left)
+                    this.preOrderTraversalNode(node.right)
+                }
+            }
+            BinarySearchTree.prototype.middleOrderTraversal=function(){
+                this.resultString=''
+                this.middleOrderTraversalNode(this.root)
+            }
+            BinarySearchTree.prototype.middleOrderTraversalNode=function(node){
+                if(node!=null){
+                    this.middleOrderTraversalNode(node.left)
+                    this.resultString+=node.key+' '
+                    this.middleOrderTraversalNode(node.right)
+                }
+            }
+            BinarySearchTree.prototype.afterOrderTraversal=function(){
+                this.resultString=''
+                this.afterOrderTraversalNode(this.root)
+            }
+            BinarySearchTree.prototype.afterOrderTraversalNode=function(node){
+                if(node!=null){
+                    this.afterOrderTraversalNode(node.left)
+                    
+                    this.afterOrderTraversalNode(node.right)
+                    this.resultString+=node.key+' '
+                }
+            }
+            BinarySearchTree.prototype.serach=function(key){
+                return this.serachNode(this.root,key)
+            }
+            BinarySearchTree.prototype.serachNode=function(node,key){
+                if(node==null)return false
+                if(key>node.key){
+                    return this.serachNode(node.right,key)
+                }
+                else if(key<node.key){
+                    return this.serachNode(node.left,key)
+                }
+                else{
+                    return true
+                }
+            }
+            BinarySearchTree.prototype.serach2=function(key){
+                var node=this.root
+                while(node){
+                    if(node.key>key){
+                        node=node.left
+                    }else if(node.key<key){
+                        node=node.right
+                    }else{
+                        return true
+                    }
+                }
+                return false
+            }
+            BinarySearchTree.prototype. remove=function(key){
+                var current=this.root
+                var parrent=null
+                var isLeftChild=true
+                while(current.key!==key){
+                    parrent=current
+                    if(key<current.key){
+                        isLeftChild=true
+                        current=current.left
+                    }
+                    else{
+                        isLeftChild=false
+                        current=current.right
+                    }
+                    if(current==null)return false
+                }
+                if(current.left==null&&current.right==null){
+                    if(current==this.root){
+                        this.root=null
+                    }else if(isLeftChild){
+                        parrent.left=null
+                    }else{
+                        parrent.right=null
+                    }
+                }
+                else if(current.right==null){
+                    if(current==this.root){
+                        this.root=current.left
+                    }
+                    else if(isLeftChild){
+                        parrent.left=current.left
+                    }
+                    else{
+                        parrent.right=current.left
+                    }
+                }
+                else if(current.left==null){
+                    if(current==this.root){
+                        this.root=current.right
+                    }
+                    else if(isLeftChild){
+                        parrent.left=current.right
+                    }
+                    else{
+                        parrent.right=current.right
+                    }
+                }
+                else{
+                    let successer=this.getSuccessor(current)
+                    if(this.root==current){
+                        this.root=successer
+                        
+                    }
+                    else if(isLeftChild){
+                        parrent.left=successer
+                    }
+                    else{
+                        parrent.right=successer
+                    }
+                    successer.left=current.left
+                }
+                return true
+            }
+            BinarySearchTree.prototype.getSuccessor=function(delNode){
+                var successerParent=delNode
+                var successer=delNode
+                var current=delNode.right
+                while(current!=null){
+                    successerParent=successer
+                    successer=current
+                    current=current.left
+                }
+                if(successer!=delNode.right){
+                    successerParent.left=successer.right
+                    successer.right=delNode.right
+                }
+                return successer
+            }
+
+        }
+        var bst=new BinarySearchTree()
+        bst.insert(11)
+        bst.insert(7)
+        bst.insert(15)
+        bst.insert(5)
+        bst.insert(3)
+        bst.insert(9)
+        bst.insert(8) 
+        bst.insert(10)
+        bst.insert(13)
+        bst.insert(12)
+        bst.insert(14)
+        bst.insert(20)
+        bst.insert(18)
+        bst.insert(25)
+        bst.insert(6)
+        bst.afterOrderTraversal()
+        console.log(bst.resultString)
+        bst.remove(12)
+        bst.afterOrderTraversal()
+        console.log(bst.resultString)
+        bst.remove(11)
+        bst.afterOrderTraversal()
+        console.log(bst.resultString)
+        bst.remove(20)
+        bst.afterOrderTraversal()
+        console.log(bst.resultString)
+        bst.remove(120)
+        bst.afterOrderTraversal()
+        console.log(bst.resultString)
+    </script>
+</body>
+</html>

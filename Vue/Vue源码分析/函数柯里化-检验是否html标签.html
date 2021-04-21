@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+</head>
+<body>
+    
+    <script>
+        //柯里化 一个函数原本有多个参数，只传入一个参数，生成一个新函数，由新函数接受剩下的参数来运行得到结果（提升性能，可以缓存一部分能力）
+        //偏函数 一个函数原本有多个参数，只传入一部分参数，生成一个新函数，由新函数接受剩下的参数来运行得到结果
+        //高阶函数 一个函数，参数是一个函数。该函数对参数函数进行加工，得到一个函数
+        
+        let tags='div,p,a,img,ul,li'.split(',')
+        
+        function makeMap(keys){
+            let set={}
+            keys.forEach(key => set[key]=true);
+            console.log(set)
+            return function(tagName){ 
+                return !!set[tagName.toLowerCase()]
+            }
+        }
+        let isHTMLTag=makeMap(tags)
+        console.log(isHTMLTag('divsss'))
+        console.log(isHTMLTag('div'))
+    </script>
+</body>
+</html>

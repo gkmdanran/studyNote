@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="root">
+        <p>{{name.lastName}}</p>
+        <p>{{age}}</p>
+    </div>
+</body>
+<script>
+    function compiler(template,data){
+        let childNodes=template.childNodes 
+        let rkuohao=/\{\{(.+?)\}\}/g   
+        for(let i=0;i<childNodes.length;i++){
+            let type=childNodes[i].nodeType //1元素 3文本
+            if(type===3){
+                let txt=childNodes[i].nodeValue //文本属性才有
+                txt=txt.replace(rkuohao,function(_,g){
+                    let path=g.trim()  //{{}}中内容
+                    let value =getValueByPath(data,path)
+                    return value   //替换{{xxx}}
+                })
+                childNodes[i].nodeValue=txt
+            }else if(type==1){
+                compiler(childNodes[i],data)
+            }
+        }
+    }
+    
+    function getValueByPath(obj,path){
+        let paths=path.split('.')
+        let res=obj
+        while(prop=paths.shift()){
+            console.log(prop)
+            res=res[prop]
+        }
+        return res
+    }
+    
+
+    function myVue(options){
+        this._data=options.data
+        this._el=options.el
+
+        this.$el=this._templateDOM=document.querySelector(this._el)
+        this._parent=this._templateDOM.parentNode
+        this.render()
+    }
+   
+    //将模板结合数据得到HTML加到页面中
+    myVue.prototype.render=function(){
+        this.compiler()
+    }
+    //编译 将模板和数据结合得到真正的DOM元素
+    myVue.prototype.compiler=function(){
+        let realHTMLDOM=this._templateDOM.cloneNode(true) 
+        compiler(realHTMLDOM,this._data)
+        this.update(realHTMLDOM)
+    }
+    //将DOM元素放到页面中
+    myVue.prototype.update=function(real){
+        this._parent.replaceChild(real,document.querySelector(this._el))
+    }
+
+
+    let app=new myVue({
+        el:'#root',
+        data:{
+            name:{
+                firstName:'张',
+                lastName:"三"
+            },
+            age:"22"
+        }
+    })
+    
+</script>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="root">
+        <p>{{name}}</p>
+        <p>{{message}}</p>
+    </div>
+</body>
+<script>
+    let tmpNode=document.querySelector('#root')
+    
+    let data={
+        name:'gkm',
+        message:'aaa'
+    }
+    let rkuohao=/\{\{(.+?)\}\}/g
+    
+    //Vue源码中DOM->字符串模板->AST(抽象语法树)->VNode->真正的DOM
+    //字符串模板->AST(抽象语法树)最消耗性能
+    //现在template我们用的是DOM元素
+    function compiler(template,data){
+        let childNodes=template.childNodes    
+        for(let i=0;i<childNodes.length;i++){
+            let type=childNodes[i].nodeType //1元素 3文本
+            if(type===3){
+                let txt=childNodes[i].nodeValue //文本属性才有
+                txt=txt.replace(rkuohao,function(_,g){
+                    let key=g.trim()  //{{}}中内容
+                    let value =data[key]
+                    return value   //替换{{xxx}}
+                })
+                childNodes[i].nodeValue=txt
+            }else if(type==1){
+                compiler(childNodes[i],data)
+            }
+        }
+    }
+    let generateNode=tmpNode.cloneNode(true)   //拷贝Dom
+    console.log(tmpNode)   //渲染前
+    compiler(generateNode,data)
+    console.log(generateNode)   //渲染后
+    root.parentNode.replaceChild(generateNode,root)
+</script>
+</html>

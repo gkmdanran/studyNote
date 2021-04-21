@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function Dictionary(){
+            this.items={}
+            Dictionary.prototype.set=function(key,value){
+                this.items[key]=value
+            }
+            Dictionary.prototype.has=function(key){
+                return this.items.hasOwnProperty(key)
+            }
+            Dictionary.prototype.remove=function(key){
+                if(!this.has(key))return false
+                delete this.items[key]
+                return true
+            }
+            Dictionary.prototype.get=function(key){
+                return this.has(key)?this.items[key]:undefined
+            }
+            Dictionary.prototype.keys=function(){
+                return Object.keys(this.items)
+            }
+            Dictionary.prototype.values=function(){
+                return Object.values(this.items)
+            }
+            Dictionary.prototype.size=function(){
+                return this.keys().length
+            }
+            Dictionary.prototype.clear=function(){
+                this.items={}
+            }
+        }
+        function Graph(){
+            this.vertexes=[]  //顶点
+            this.edges=new Dictionary()  //边
+            Graph.prototype.addVertex=function(v){
+                this.vertexes.push(v)
+                this.edges.set(v,[])
+            }
+            Graph.prototype.addEdge=function(v1,v2,){
+                this.edges.get(v1).push(v2)
+                this.edges.get(v2).push(v1)
+            }
+            Graph.prototype.toString=function(){
+                var resultString=''
+                for(var i=0;i<this.vertexes.length;i++){
+                    resultString+=this.vertexes[i]+'->'
+                    var vEdges=this.edges.get(this.vertexes[i])
+                    for(var j=0;j<vEdges.length;j++){
+                        resultString+=vEdges[j]+' '
+                    }
+                    resultString+='\n'
+                }
+                return resultString
+            }
+            Graph.prototype.intialize=function(){
+                var colors=[]
+                for(var i=0;i<this.vertexes.length;i++){
+                    colors[this.vertexes[i]]='white'  //未被访问过节点为白色
+                }
+                return colors
+            }
+            Graph.prototype.bfs=function(initV,handler){
+                var colors=this.intialize()
+                var queue=[]
+                queue.push(initV)
+                while(queue.length!=0){ 
+                    var v=queue.shift()
+                    var vList=this.edges.get(v)
+                    colors[v]='grey'  //探测未被访问
+                    for(var i=0;i<vList.length;i++){
+                        var e=vList[i]
+                        if(colors[e]=='white'){
+                            colors[e]='grey'
+                            queue.push(e)
+                        }
+                    }
+                    handler(v)   //访问
+                    colors[v]='black' //探测并访问完
+                    
+                }
+            }
+            Graph.prototype.dfs=function(initV,handler){
+                var colors=this.intialize()
+                this.dfsVisit(initV,colors,handler)
+            }
+            Graph.prototype.dfsVisit=function(v,colors,handler){
+                colors[v]='grey'
+                handler(v)
+                var vList=this.edges.get(v)
+                for(var i=0;i<vList.length;i++){
+                    var e=vList[i]
+                    if(colors[e]=='white'){
+                        this.dfsVisit(e,colors,handler)
+                    }
+                }
+                colors[v]='black' //探测并访问完
+            }
+        }
+        var g=new Graph()
+        g.addVertex('A')
+        g.addVertex('B')
+        g.addVertex('C')
+        g.addVertex('D')
+        g.addVertex('E')
+        g.addVertex('F')
+        g.addVertex('G')
+        g.addVertex('H')
+        g.addVertex('I')
+        g.addEdge('A','B')
+        g.addEdge('A','C')
+        g.addEdge('A','D')
+        g.addEdge('C','D')
+        g.addEdge('C','G')
+        g.addEdge('D','G')
+        g.addEdge('D','H')
+        g.addEdge('B','E')
+        g.addEdge('B','F')
+        g.addEdge('E','I')
+        g.dfs('A',function(v){
+            var result=''
+            result+=v+' '
+            console.log(result)
+        })
+    </script>
+</body>
+</html>

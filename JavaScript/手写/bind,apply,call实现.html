@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+    <script>
+        var person = {
+            fullName: function(a,b) {
+                return this.firstName + " " + this.lastName+a+b;
+            }
+        }
+        var person1 = {
+            firstName:"Bill",
+            lastName: "Gates",
+        }
+        Function.prototype.myCall = function (context) {
+            var content = context || window;
+            content.fn = this;
+            var args = [];
+            // arguments是类数组对象，遍历之前需要保存长度，过滤出第一个传参
+            args=[...arguments].slice(1)
+            var result =content.fn(...args)
+            delete content.fn;
+            return result;
+        }
+        console.log(person.fullName.myCall(person1,'aa','bb'))
+        
+        Function.prototype.myApply=function(context){
+            var content = context || window;
+            content.fn = this;
+            var result
+            if(arguments[1]){
+                result=content.fn(...arguments[1])
+            }else{
+                result=content.fn()
+            }
+            delete content.fn
+            return result
+        }
+        console.log(person.fullName.myApply(person1,['aa','bb']))
+        
+        Function.prototype.myBind = function (context) {
+            if (typeof this !== 'function') {
+                throw new TypeError('Error')
+            }
+            var _this = this
+            var args = [...arguments].slice(1)
+            // 返回⼀个函数
+            return function F() {
+            // 因为返回了⼀个函数，我们可以 new F()，所以需要判断
+                if (this instanceof F) {
+                    return new _this(...args, ...arguments)
+                }
+                return _this.apply(context, args.concat(...arguments))
+            }
+        }
+        var testBind=person.fullName.myBind(person1,'aa')
+        console.log(testBind("bb"))
+        
+    </script>
+</html>

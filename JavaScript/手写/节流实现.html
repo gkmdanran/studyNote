@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节流实现</title>
+</head>
+<body>
+    <button class="btn">节流实现</button>
+    <script>
+        var btn=document.querySelector(".btn")
+        function throttle(fn,delay){
+            var last=0
+            return function(){
+                var now=+Date.now()
+                console.log(last)
+                if(now>last+delay){
+                    last=now
+                    fn.apply(this,arguments)
+                }
+            }
+        }
+        function sayHi(a){
+            console.log(a)
+        }
+        fn=throttle(sayHi,3000)
+        btn.addEventListener('click',function(){
+            fn(3)
+        })
+    </script>
+</body>
+</html>

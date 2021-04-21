@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+    <script>
+        // JSON.parse(JSON.stringify())实现深拷贝缺点
+        //1.如果json里面有时间对象，则序列化结果：时间对象=>字符串的形式；
+        //2.如果json里有RegExp、Error对象，则序列化的结果将只得到空对象 RegExp、Error => {}；
+        //3.如果json里有 function,undefined，则序列化的结果会把 function,undefined 丢失；
+        //4.如果json里有NaN、Infinity和-Infinity，则序列化的结果会变成null；
+        //5.如果json里有对象是由构造函数生成的，则序列化的结果会丢弃对象的 constructor；
+        //6.如果对象中存在循环引用的情况也无法实现深拷贝
+        var a=[
+            {name:1},
+            {name:2,list:[1,2,3]}
+        ]
+        function deepClone(source){
+            const targetObj = source.constructor === Array ? [] : {}; // 判断复制的目标是数组还是对象
+            for(let keys in source){ // 遍历目标
+                if(source.hasOwnProperty(keys)){    //来忽略继承属性
+                    if(source[keys] && typeof source[keys] === 'object'){ // 如果值是对象，就递归一下
+                        targetObj[keys] = source[keys].constructor === Array ? [] : {};
+                        targetObj[keys] = deepClone(source[keys]);
+                    }else{ // 如果不是，就直接赋值
+                        targetObj[keys] = source[keys];
+                    }
+                }
+            }
+            return targetObj;
+        }
+        function deepClone2(source){
+        var target=Array.isArray(source)?[]:{}
+        for(var key in source){
+            if(source.hasOwnProperty(key)){
+                if(Object.prototype.toString.call(source[key])=='[object Object]'||Object.prototype.toString.call(source[key])=='[object Array]'){
+                    target[key]=deepClone(source[key])
+                }else{
+                    target[key]=source[key]
+                }
+            }
+        }
+        return target
+    }
+    </script>
+</html>

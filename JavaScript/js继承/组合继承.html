@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function Parent(name) {
+            this.name = name;
+            this.type = ['JS', 'HTML', 'CSS'];
+            Parent.prototype.show=function(){
+                console.log('parent')
+            }
+        }
+       
+        function Son(name) {
+            Parent.call(this, name);
+        }
+        Son.prototype = new Parent();
+        son1 = new Son('张三');
+        son2 = new Son('李四');
+        son1.type.push('VUE');
+        son2.type.push('PHP');
+        console.log(son1.type);//['JS','HTML','CSS','VUE']
+        console.log(son2.type);//['JS','HTML','CSS','PHP']
+        son1.Say();//张三
+        son2.Say();//李四
+        son1.show()
+        //优点：
+        // 1.利用原型链继承，实现原型对象方法的继承
+        // 2.利用构造函数继承，实现属性的继承，而且可以参数 组合函数基本满足了JS的继承，比较常用
+
+        //缺点 无论什么情况下，都会调用两次父级构造函数：一次是在创建子级原型的时候，另一次是在子级构造函数内部
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件模型</title>
+</head>
+<body>
+    <script>
+        var event=(function(){
+            var eventObjs={}
+            return {
+                on:function(type,handler){
+                    (eventObjs[type]||(eventObjs[type]=[])).push(handler)
+                    
+                },
+                //无参数移除所有
+                //两个参数 移除某一个事件的具体处理函数
+                off:function(type,handler){
+                    if(arguments.length==0){
+                        eventObjs={}
+                    }else if(arguments.length==1){
+                        eventObjs[type]=[]
+                    }else if(arguments.length==2){
+                        let _events=eventObjs[type]
+                        if(!_event)return
+                        //倒着循环 数组序号不会受到影响
+                        for(let i=_events.length;i>0;i--){
+                            if(_events[i]===handler){
+                                _events.splice(i,1)
+                            }
+                        }
+                    }
+                },
+                emit:function(type){
+                    let args=Array.prototype.slice.call(arguments,1)    //1 开始所有参数
+                    let _events=eventObjs[type]
+                    if(!_events)return
+                    for(let i=0;i<_events.length;i++){
+                        _events[i].apply(null,args)
+                    }
+                },
+            }
+        }())
+       
+
+        function show(a){
+            console.log(a)
+        }
+        event.on('show',show)
+        event.emit('show',2)
+        
+    </script>
+</body>
+</html>

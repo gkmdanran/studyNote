@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+    var list=[
+        {id:0,name:'一级1',pid:''},
+        {id:1,name:'一级2',pid:''},
+        {id:2,name:'二级1',pid:'0'},
+        {id:3,name:'二级2',pid:'1'},
+        {id:4,name:'二级3',pid:'0'},
+        {id:5,name:'三级1',pid:'3'},
+    ]
+    var tree=[
+        {id:'1',name:'一级1',children:[
+            {id:'3',name:'二级1',children:[]},
+            {id:'4',name:'二级2'},
+            {id:'5',name:'二级3',children:[{id:'6',name:'三级1'}]}
+        ]},
+        {id:'2',name:'一级2',children:[{id:'7',name:'二级4'}]},
+    ]
+    function listToTree(list){
+        var tree=[]
+        var record={}
+        list.forEach(item => {
+            item.children=[]
+            record[item.id]=item
+        });
+        list.forEach(item=>{
+            if(item.pid){
+                if(record[item.pid])
+                    record[item.pid].children.push(item)
+            }else{
+                tree.push(item)
+            }
+        })
+        return tree
+    }
+    
+   
+    function treeToList(tree){
+        var list=[]
+        findChildren(tree,list,'')
+        return list
+    }
+    function findChildren(child,list,pid){
+        child.forEach(item=>{
+            list.push({id:item.id,name:item.name,pid})
+            if(!item.children||item.children.length==0){
+                return 
+            }else{
+                findChildren(item.children,list,item.id)
+            }
+        })
+    }
+    var afterTree=listToTree(list)
+    console.log(afterTree)
+    console.log(treeToList(afterTree))
+</script>
+</html>

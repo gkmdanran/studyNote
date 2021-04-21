@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        function fun(obj) {
+            function Son() { };
+            Son.prototype = obj;
+            return new Son();
+        }
+        function JiSheng(obj) {
+            var clone = fun(obj);
+            clone.Say = function () {
+                console.log('我是新增的方法');
+            }
+            return clone;
+        }
+        var parent = {
+            name: '张三',
+            type:['a','b','c']
+        }
+        var parent1 = JiSheng(parent);
+        var parent2 = JiSheng(parent);
+        parent2.type.push('e')
+        console.log(parent1.type)
+        console.log(parent2.type)
+        console.log(parent2.Say == parent1.Say);// false
+
+        //导致函数难以重用
+    </script>
+</body>
+
+</html>

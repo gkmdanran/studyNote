@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="root">
+        <p>{{name.a}}</p>
+        <p>{{message}}</p>
+    </div>
+    <script>
+        class VNode{
+            constructor(tag,data,value,type){
+                this.tag=tag&&tag.toLowerCase()
+                this.data=data
+                this.value=value
+                this.type=type
+                this.children=[]
+            }
+            appendChild(vnode){
+                this.children.push(vnode)
+            }
+        }
+        //由htmlDOM生成带坑的VNode：当做compiler
+        function getVNode(node){
+            let nodeType=node.nodeType
+            let _vnode=null
+            if(nodeType==1){
+                let nodeName=node.nodeName
+                let attrs=node.attributes            
+                let _arrObj={}
+                for(var i=0;i<attrs.length;i++){
+                    _arrObj[attrs[i].nodeName]=attrs[i].nodeValue
+                }
+                _vnode=new VNode(nodeName,_arrObj,undefined,nodeType)
+                let childNodes=node.childNodes
+                for(let i = 0;i<childNodes.length;i++){
+                    _vnode.appendChild(getVNode(childNodes[i]))
+                }
+            }else if(nodeType==3){
+                _vnode=new VNode(undefined,undefined,node.nodeValue,nodeType)
+            }
+            return _vnode
+        }
+
+        function parseVNode(vnode){      
+            let nodeType=vnode.type
+            let realDom=null
+            if(nodeType==1){
+                realDom=document.createElement(vnode.tag)
+                for(var key in vnode.data){   
+                    realDom.setAttribute(key,vnode.data[key])
+                }
+                if(vnode.value==undefined)
+                    vnode.value=''
+                realDom.innerText=vnode.value
+                let childNodes=vnode.children
+                for(let i = 0;i<childNodes.length;i++){
+                    realDom.appendChild(parseVNode(childNodes[i]))
+                }
+            }else if(nodeType==3){
+                realDom=document.createTextNode(vnode.value)
+            }
+            return realDom
+        }
+
+        function getValueByPath(obj,path){
+            let paths=path.split('.')
+            let res=obj
+            while(prop=paths.shift()){
+                res=res[prop]
+            }
+            return res
+        }
+
+        function combine(vnode,data){
+            let rkuohao=/\{\{(.+?)\}\}/g
+            let _type=vnode.type
+            let _data=vnode.data
+            let _value=vnode.value
+            let _tag=vnode.tag
+            let _children=vnode.children
+            let _vnode=null
+            if(_type==3){   //文本
+                _value=_value.replace(rkuohao,function(_,g){
+                    return getValueByPath(data,g.trim())
+                })
+                _vnode=new VNode(_tag,_data,_value,_type)
+            }else if(_type==1){  //元素
+                _vnode=new VNode(_tag,_data,_value,_type)
+                _children.forEach(_subVNode =>_vnode.appendChild(combine(_subVNode,data)));
+            }
+            return _vnode
+        }
+
+        function myVue(options){
+            this._options=options
+            this._data=options.data;
+            let elm=document.querySelector(options.el)
+            this._template=elm;  //VUE是字符串 这里简化是DOM
+            this._parent=elm.parentNode
+            // this._template=document.querySelector(options.el)
+            this.initData()
+            this.mount(); //挂载
+        }
+        
+        myVue.prototype.mount=function(){
+            //需要提供一个render方法：生成虚拟DOM
+            if(typeof this._options.render!=='function'){
+                this.render=this.crateRenderFn()
+            }   
+            this.mountComponent()
+        }
+
+        myVue.prototype.mountComponent=function(){       
+            let mount=()=>{
+                this.update(this.render())   //虚拟DOM渲染到页面上  
+            }
+            mount.call(this)
+        }
+        
+        //生成render函数，为了缓存抽象语法树
+        myVue.prototype.crateRenderFn=function(){
+            //VUE 是将AST+data=>VNode
+            //这里简化 将带坑的VNode+data=>含有数据的VNode
+            let ast=getVNode(this._template)  //带坑的VNode          
+            return function render(){
+                // console.log(combine(ast,this._data))
+                return combine(ast,this._data)
+            }
+        }
+        
+        //虚拟dom渲染到页面中 diff算法就在这里
+        myVue.prototype.update=function(vnode){
+            //这里简化，直接生成HTML DOM replaceChild到页面中
+            
+            
+            this._parent.replaceChild(parseVNode(vnode),document.querySelector(this._options.el))       
+           
+        }
+        
+
+        //响应式
+        let ARRAY_METHOD=[
+            'push',
+            'pop',
+            'shift',
+            'unshift',
+            'reverse',
+            'sort',
+            'splice'
+        ]
+        let array_method=Object.create(Array.prototype)
+        console.log(array_method)
+        ARRAY_METHOD.forEach(method=>{
+            array_method[method]=function(){
+                console.log('g')
+                for(let i=0;i<arguments.length;i++){
+                    reactify(arguments[i])
+                }
+                let res=Array.prototype[method].apply(this,arguments)
+                return res
+            }
+        })
+
+        function defineRective(target,key,value,enumerable){
+            //value在函数内部形成一个局部作用域
+            let that=this   //that 为vue实例
+            if(typeof value==='object'&&value!=null&&!Array.isArray(value)){
+
+                reactify(value,that)
+            }
+            Object.defineProperty(target,key,{
+                configurable:true,
+                enumerable:!!enumerable,
+                get(){
+                    console.log(`读取o的${key}属性`)
+                    return value
+                },
+                set(newVal){
+                    console.log(`设置o的${key}属性`)
+                    if(typeof newVal=='object'&&newVal!=null)
+                        value=reactify(newVal)
+                    else{
+                        value=newVal
+                    }
+                    that.mountComponent() //模板刷新
+                }
+            })
+        }
+
+        function reactify(o,vm){
+            let keys=Object.keys(o)
+            for(let i=0;i<keys.length;i++){
+                let key=keys[i]
+                let value=o[keys[i]]
+                if(Array.isArray(value)){     //数组
+                    value.__proto__=array_method
+                    for (let j=0;j<value.length;j++){
+                        reactify(value[j],vm)
+                    }
+                }else{                         //对象或值类型
+                    defineRective.call(vm,o,key,value,true,)
+                }
+            }
+        }
+        
+        function Observer(obj,vm ){
+
+        }
+        function proxy(target,prop,key){
+            Object.defineProperty(target,key,{
+                enumerable:true,
+                configurable:true,
+                get(){
+                    return target[prop][key]
+                },
+                set(newVal){
+                    target[prop][key]=newVal
+                }
+            })
+        }
+        myVue.prototype.initData=function(){
+            let keys=Object.keys(this._data)
+            //响应式化
+            for(let i=0;i<keys.length;i++){
+                reactify(this._data,this)
+            }
+            //代理
+            for(let i=0;i<keys.length;i++){
+               proxy(this,'_data',keys[i])
+            }
+        }
+
+
+        let app =new myVue({
+            el:'#root',
+            data:{
+                name:{
+                    a:'22'
+                },
+                message:'111111'
+            }
+        })
+    </script>
+</body>
+</html>

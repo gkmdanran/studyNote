@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相应式原理</title>
+</head>
+<body>
+    <script>
+        var obj={
+            name:'张三',
+            age:19,
+            course:[
+                {name:'语文'},
+                {name:'数学'}  
+            ]
+        }
+
+        let ARRAY_METHOD=[
+            'push',
+            'pop',
+            'shift',
+            'unshift',
+            'reverse',
+            'sort',
+            'splice'
+        ]
+        let array_method=Object.create(Array.prototype)
+        ARRAY_METHOD.forEach(method=>{
+            array_method[method]=function(){
+                console.log('g')
+                for(let i=0;i<arguments.length;i++){
+                    reactify(arguments[i])
+                }
+                let res=Array.prototype[method].apply(this,arguments)
+                return res
+            }
+        })
+
+        function defineRective(target,key,value,enumerable){
+            //value在函数内部形成一个局部作用域
+            if(typeof value==='object'&&value!=null&&!Array.isArray(value)){
+                reactify(value)
+            }
+            Object.defineProperty(target,key,{
+                configurable:true,
+                enumerable:!!enumerable,
+                get(){
+                    console.log(`读取o的${key}属性`)
+                    return value
+                },
+                set(newVal){
+                    console.log(`设置o的${key}属性`)
+                    value=newVal
+                }
+            })
+        }
+
+        function reactify(o){
+            let keys=Object.keys(o)
+            for(let i=0;i<keys.length;i++){
+                let key=keys[i]
+                let value=o[keys[i]]
+                if(Array.isArray(value)){     //数组
+                    value.__proto__=array_method
+                    for (let j=0;j<value.length;j++){
+                        reactify(value[j])
+                    }
+                }else{                         //对象或值类型
+                    defineRective(o,key,value,true)
+                }
+            }
+        }
+        reactify(obj)
+        
+        
+        
+    </script>
+</body>
+</html>

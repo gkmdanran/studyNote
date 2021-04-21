@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟Dom实现</title>
+</head>
+<body>
+    <div id="root" class="aaa" name="22">33
+        <div>
+            <div class="aaa">hello</div>222
+            <ul>
+                <li>hello1</li>
+                <li>hello2</li>
+                <li>hello3</li>
+            </ul>
+            
+        </div>
+    </div>
+    <script>
+        class VNode{
+            constructor(tag,data,value,type){
+                this.tag=tag&&tag.toLowerCase()
+                this.data=data
+                this.value=value
+                this.type=type
+                this.children=[]
+            }
+            appendChild(vnode){
+                this.children.push(vnode)
+            }
+        }
+
+        function getVNode(node){
+            let nodeType=node.nodeType
+            let _vnode=null
+            if(nodeType==1){
+                let nodeName=node.nodeName
+                let attrs=node.attributes            
+                let _arrObj={}
+                for(var i=0;i<attrs.length;i++){
+                    _arrObj[attrs[i].nodeName]=attrs[i].nodeValue
+                }
+                _vnode=new VNode(nodeName,_arrObj,undefined,nodeType)
+                let childNodes=node.childNodes
+                for(let i = 0;i<childNodes.length;i++){
+                    _vnode.appendChild(getVNode(childNodes[i]))
+                }
+            }else if(nodeType==3){
+                _vnode=new VNode(undefined,undefined,node.nodeValue,nodeType)
+            }
+            return _vnode
+        }
+        
+        function parseVNode(vnode){      
+            let nodeType=vnode.type
+            let realDom=null
+            if(nodeType==1){
+                realDom=document.createElement(vnode.tag)
+                for(var key in vnode.data){   
+                    realDom.setAttribute(key,vnode.data[key])
+                }
+                // if(vnode.value==undefined)
+                //     vnode.value=''
+                realDom.innerText=vnode.value
+                let childNodes=vnode.children
+                for(let i = 0;i<childNodes.length;i++){
+                    realDom.appendChild(parseVNode(childNodes[i]))
+                }
+            }else if(nodeType==3){
+                realDom=document.createTextNode(vnode.value)
+            }
+            return realDom
+        }
+        
+        let root=document.querySelector('#root')
+        console.log(root)
+        let vroot=getVNode(root)
+        console.log(vroot)
+        let realroot=parseVNode(vroot)
+        console.log(realroot)
+    </script>
+</body>
+</html>
